@@ -102,7 +102,7 @@
 
         .hint { color: #8892b0; font-size: 12px; margin-top: 5px; }
 
-        /* تنسيق خاص للأقسام المخفية */
+        /* التنسيق الخاص بالأقسام الديناميكية */
         .appeal-only { display: none; }
 
         #preview_modal {
@@ -160,8 +160,8 @@
                 <div class="input-group"><label>تاريخ الحكم:</label><input type="text" id="judg_date" class="input-field"></div>
             </div>
             <div class="input-group">
-                <label> الحكم وأسبابه:</label>
-                <textarea id="judg_summary" placeholder="..."></textarea>
+                <label>ملخص الحكم وأسبابه:</label>
+                <textarea id="judg_summary" placeholder="اكتب هنا ما قضت به الدائرة الابتدائية..."></textarea>
             </div>
         </div>
 
@@ -188,6 +188,7 @@
             </div>
             <div class="grid-2">
                 <div class="input-group"><label>رقم القضية:</label><input type="text" id="case_id" class="input-field"></div>
+                <div class="input-group"><label>تاريخ القضية:</label><input type="text" id="case_date" class="input-field" placeholder="هـ/م"></div>
             </div>
         </div>
 
@@ -228,7 +229,18 @@
                     <textarea id="demands" placeholder="مثلاً: الحكم بإلزام المدعى عليه بمبلغ..."></textarea>
                 </div>
             </div>
-           
+            <div class="input-group">
+                <label>الأساس النظامي (المواد القانونية):</label>
+                <input type="text" id="legal_base" class="input-field" placeholder="المادة ... من نظام ...">
+            </div>
+        </div>
+
+        <div class="section-box">
+            <span class="section-title">سابعاً: بيانات التوقيع</span>
+            <div class="input-group">
+                <label>اسم المحامي (سيظهر في ختام المذكرة):</label>
+                <input type="text" id="lawyer_name" class="input-field">
+            </div>
         </div>
 
         <button type="button" class="btn-submit" onclick="previewMemo()">معاينة المذكرة</button>
@@ -245,10 +257,10 @@
 <script>
     const memoData = {
         "قضاء التنفيذ": ["منازعة تنفيذ", "اعتراض على أمر تنفيذ", "طلب وقف التنفيذ", "طلب مهلة سداد", "طلب إثبات إعسار", "رد على منازعة تنفيذ"],
-        "القضاء التجاري": ["صحيفة دعوى", "مذكرة جوابية", "لائحة استئناف", "دفع بعدم الاختصاص", "طلب تعويض", "فسخ عقد"],
-        "القضاء الجزائي": ["مذكرة دفاع", "رد على لائحة الاتهام", "طلب إخلاء سبيل", "لائحة اعتراضية"],
-        "القضاء العمالي": ["صحيفة دعوى عمالية", "مذكرة رد عمالية", "استئناف حكم عمالي"],
-        "القضاء الإداري (ديوان المظالم)": ["دعوى إلغاء قرار", "دعوى تعويض", "اعتراض أمام المحكمة الإدارية العليا"]
+        "القضاء التجاري": ["صحيفة دعوى", "مذكرة جوابية", "لائحة استئناف", "طلب نقض أمام المحكمة العليا", "دفع بعدم الاختصاص", "طلب تعويض", "فسخ عقد"],
+        "القضاء الجزائي": ["مذكرة دفاع", "رد على لائحة الاتهام", "طلب إخلاء سبيل", "لائحة اعتراضية", "طلب نقض (المحكمة العليا)"],
+        "القضاء العمالي": ["صحيفة دعوى عمالية", "مذكرة رد عمالية", "استئناف حكم عمالي", "طلب نقض عمالي"],
+        "القضاء الإداري (ديوان المظالم)": ["دعوى إلغاء قرار", "دعوى تعويض", "اعتراض أمام المحكمة الإدارية العليا", "طلب التماس إعادة نظر"]
     };
 
     function updateMemoTypes() {
@@ -266,20 +278,18 @@
 
     function checkAppealType() {
         const type = document.getElementById("memo_type").value;
-        const isAppeal = type.includes("اعتراض") || type.includes("استئناف");
+        const isAppeal = type.includes("اعتراض") || type.includes("استئناف") || type.includes("نقض") || type.includes("التماس");
         
-        // إظهار أو إخفاء الأقسام بناءً على نوع المذكرة
         const appealElements = document.querySelectorAll('.appeal-only');
         appealElements.forEach(el => el.style.display = isAppeal ? 'block' : 'none');
         
-        // إخفاء الوقائع والدفوع في حالة الاعتراض
         document.getElementById('facts_section').style.display = isAppeal ? 'none' : 'block';
         document.getElementById('defenses_section').style.display = isAppeal ? 'none' : 'block';
     }
 
     function previewMemo() {
         const memoType = document.getElementById("memo_type").value;
-        const isAppeal = memoType.includes("اعتراض") || memoType.includes("استئناف");
+        const isAppeal = memoType.includes("اعتراض") || memoType.includes("استئناف") || memoType.includes("نقض") || memoType.includes("التماس");
 
         let content = `بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ\n\n`;
         content += `لدى / ${document.getElementById('court_name').value || '.......'} (${document.getElementById('chamber_name').value || '.......'}) بمدينة ${document.getElementById('city').value || '.......'}\n\n`;
@@ -303,7 +313,7 @@
         content += `الأسانيد والأدلة:\n${document.getElementById('evidence').value || 'لا يوجد'}\n`;
         content += `الأساس النظامي: ${document.getElementById('legal_base').value || 'النظام العام'}\n\n`;
         content += `الطلبات:\n${document.getElementById('demands').value || '.......'}\n\n`;
-        content += `والله ولي التوفيق ،،\nمقدمه / المحامي ${document.getElementById('lawyer_name').value || '.......'}`;
+        content += `والله ولي التوفيق ،،\nمقدمه / ${document.getElementById('lawyer_name').value || '.......'}`;
 
         document.getElementById("preview_content").innerText = content;
         document.getElementById("preview_modal").style.display = "block";
